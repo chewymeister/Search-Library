@@ -6,27 +6,37 @@ require 'fileutils'
 class SearchLibrary
   def initialize root_dir
     @root_dir = root_dir
-    @file_names = []
+    @filenames = []
   end
 
   def find search_term
-    files = Dir.foreach(@root_dir) do |item|
-      next if item == '.' or item == '..'
-      file = File.open(@root_dir + item)
-      contents = file.read
-      contains_search_term = contents.include?(search_term)
+    Dir.foreach(@root_dir) do |file_item|
+      next if file_item == '.' or file_item == '..'
 
-      if contains_search_term
-        @file_names << @root_dir + item
+      if search_term_found? file_item, search_term
+        add_to_results file_item
       end
     end
 
-    @file_names
+    @filenames
+  end
+
+  def add_to_results file_item
+    @filenames << @root_dir + file_item
+  end
+  
+  def search_term_found? file_item, search_term
+    contains_search_term = file_item.include?(search_term)
+  end
+
+  def read_contents_of(file_item)
+    File.open(@root_dir + file_item).read
   end
 end
 
 describe SearchLibrary do
   let(:test_dir) { "./test/" }
+  let(:search_library) { SearchLibrary.new(test_dir) }
   before do
     prepare_test_dir
   end
@@ -36,20 +46,19 @@ describe SearchLibrary do
   end
 
   context "when there is one file" do
+
     it "should find the word yes, and return file name" do
-      file_name = "#{test_dir}yes.txt"
-      File.open(file_name, 'w') { |file| file.write("yes") } 
+      filename = "#{test_dir}yes.txt"
+      write_test_file_for filename
       
-      search_library = SearchLibrary.new(test_dir)
-      expect(search_library.find("yes")).to eq [file_name]
+      expect(search_library.find("yes")).to eq [filename]
     end
 
     it "should find the word yes, and return file name" do
-      file_name = "#{test_dir}second_yes.txt"
-      File.open(file_name, 'w') { |file| file.write("yes") } 
+      filename = "#{test_dir}second_yes.txt"
+      write_test_file_for filename
 
-      search_library = SearchLibrary.new(test_dir)
-      expect(search_library.find("yes")).to eq [file_name]
+      expect(search_library.find("yes")).to eq [filename]
     end
   end
 
@@ -60,8 +69,6 @@ describe SearchLibrary do
       write_test_file_for file_name_one
       write_test_file_for file_name_two
        
-      search_library = SearchLibrary.new(test_dir)
-
       expect(search_library.find("yes").sort).to eq [file_name_one, file_name_two].sort
     end
   end
