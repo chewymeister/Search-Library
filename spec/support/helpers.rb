@@ -1,4 +1,8 @@
 module Helpers
+  def create_nested_directory_for filename, test_dir, nested_dir
+    Dir.mkdir(test_dir + nested_dir) 
+  end
+
   def write_test_file_for filename
     File.open(filename, 'w') { |file| file.write("yes") } 
   end
