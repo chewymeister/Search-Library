@@ -1,38 +1,6 @@
-# Find a word in a directory of file inside the file data
-
 require 'rspec'
+require 'spec_helper'
 require 'fileutils'
-
-class SearchLibrary
-  def initialize root_dir
-    @root_dir = root_dir
-    @filenames = []
-  end
-
-  def find search_term
-    Dir.foreach(@root_dir) do |file_item|
-      next if file_item == '.' or file_item == '..'
-
-      if search_term_found? file_item, search_term
-        add_to_results file_item
-      end
-    end
-
-    @filenames
-  end
-
-  def add_to_results file_item
-    @filenames << @root_dir + file_item
-  end
-  
-  def search_term_found? file_item, search_term
-    contains_search_term = file_item.include?(search_term)
-  end
-
-  def read_contents_of(file_item)
-    File.open(@root_dir + file_item).read
-  end
-end
 
 describe SearchLibrary do
   let(:test_dir) { "./test/" }
@@ -72,17 +40,4 @@ describe SearchLibrary do
       expect(search_library.find("yes").sort).to eq [file_name_one, file_name_two].sort
     end
   end
-end
-
-def write_test_file_for filename
-  File.open(filename, 'w') { |file| file.write("yes") } 
-end
-
-def prepare_test_dir
-  FileUtils.rm_rf(test_dir)
-  Dir.mkdir(test_dir)
-end
-
-def clean_test_dir
-  FileUtils.rm_rf("./test/")
 end
